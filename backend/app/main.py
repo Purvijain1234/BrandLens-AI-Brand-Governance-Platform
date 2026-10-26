@@ -64,3 +64,7 @@ def get_me(current_user: UserPayload = Depends(get_current_user)):
         "user": current_user.model_dump(),
         "available_roles": list(DEMO_USERS.keys()),
     }
+
+from backend.app.api.knowledge_base import router as kb_router
+
+app.include_router(kb_router)
