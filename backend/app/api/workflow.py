@@ -1,12 +1,13 @@
 import json
 import uuid
 from typing import List, Optional, Dict, Any
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from pydantic import BaseModel
 
 from backend.app.core.security import get_current_user, require_roles, UserPayload
 from backend.app.db.database import db
 from backend.app.review.pipeline import run_pipeline, ReviewOptions
+from backend.app.parser.document_parser import parse_pdf_bytes, parse_docx_bytes, parse_image_bytes
 
 router = APIRouter(tags=["Content Workflow & Approval"])
 
@@ -72,6 +73,82 @@ def create_content(payload: ContentCreate, current_user: UserPayload = Depends(g
     conn.close()
 
     return {"status": "created", "content_item_id": item_id, "version_id": version_id}
+
+@router.post("/content/upload")
+async def upload_content_file(
+    file: UploadFile = File(...),
+    title: Optional[str] = Form(None),
+    content_type: Optional[str] = Form("Social post"),
+    channel: Optional[str] = Form("Instagram"),
+    current_user: UserPayload = Depends(get_current_user),
+):
+    """
+    Parses PDF, DOCX, or Image uploads, extracts text and visual properties, and initiates governance review.
+    """
+    file_bytes = await file.read()
+    filename = file.filename.lower() if file.filename else "upload.txt"
+    title = title or file.filename or "Uploaded content"
+
+    extracted_text = ""
+    has_image = False
+    fg_color = "#9aa6b2"
+    bg_color = "#ffffff"
+    file_metadata = {}
+
+    if filename.endswith(".docx"):
+        parsed = parse_docx_bytes(file_bytes)
+        extracted_text = parsed["text"]
+        file_metadata = parsed
+    elif filename.endswith(".pdf"):
+        parsed = parse_pdf_bytes(file_bytes)
+        extracted_text = parsed["text"]
+        file_metadata = parsed
+    elif any(filename.endswith(ext) for ext in [".png", ".jpg", ".jpeg", ".webp"]):
+        parsed = parse_image_bytes(file_bytes)
+        extracted_text = parsed["text"] or f"[Image creative: {file.filename}]"
+        has_image = True
+        fg_color = parsed.get("fg_color", "#9aa6b2")
+        bg_color = parsed.get("bg_color", "#ffffff")
+        file_metadata = parsed
+    else:
+        # Plain text fallback
+        extracted_text = file_bytes.decode("utf-8", errors="ignore")
+
+    conn = db.get_connection()
+    cur = conn.cursor()
+
+    item_id = str(uuid.uuid4())
+    version_id = str(uuid.uuid4())
+
+    cur.execute(
+        "INSERT INTO content_items (id, org_id, title, type, channel, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (item_id, current_user.org_id, title, content_type, channel, "draft", current_user.full_name or current_user.role)
+    )
+
+    cur.execute(
+        "INSERT INTO content_versions (id, content_item_id, n, text, created_by, note) VALUES (?, ?, ?, ?, ?, ?)",
+        (version_id, item_id, 1, extracted_text, current_user.full_name or current_user.role, f"Uploaded {file.filename}")
+    )
+
+    log_audit(conn, current_user.org_id, item_id, current_user.full_name or current_user.role, "Uploaded file", {
+        "filename": file.filename,
+        "type": file_metadata.get("file_type", "text"),
+        "has_image": has_image
+    })
+
+    conn.commit()
+    conn.close()
+
+    return {
+        "status": "uploaded",
+        "content_item_id": item_id,
+        "version_id": version_id,
+        "filename": file.filename,
+        "extracted_text": extracted_text,
+        "has_image": has_image,
+        "fg_color": fg_color,
+        "bg_color": bg_color,
+    }
 
 @router.get("/content")
 def list_content(current_user: UserPayload = Depends(get_current_user)):
