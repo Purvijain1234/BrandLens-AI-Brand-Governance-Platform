@@ -162,7 +162,7 @@ def create_fact(fact: FactCreate, current_user: UserPayload = Depends(require_ro
         fact_id = f"F-{count:03d}"
 
     cur.execute(
-        "INSERT INTO facts (id, org_id, label, value, source, owner, expires_on) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        "INSERT OR REPLACE INTO facts (id, org_id, label, value, source, owner, expires_on) VALUES (?, ?, ?, ?, ?, ?, ?)",
         (fact_id, current_user.org_id, fact.label, fact.value, fact.source, fact.owner, fact.expires_on)
     )
     conn.commit()
