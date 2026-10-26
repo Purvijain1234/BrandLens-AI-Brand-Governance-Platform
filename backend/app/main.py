@@ -66,5 +66,7 @@ def get_me(current_user: UserPayload = Depends(get_current_user)):
     }
 
 from backend.app.api.knowledge_base import router as kb_router
+from backend.app.api.workflow import router as workflow_router
 
 app.include_router(kb_router)
+app.include_router(workflow_router)
