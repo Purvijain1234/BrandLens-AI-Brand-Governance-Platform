@@ -81,7 +81,3 @@ BrandLens/
 2. **Real user management & persistence** – Integrate Supabase (or another managed Postgres) for user accounts, document storage, and audit logs instead of the local SQLite demo.
 3. **Analytics & dashboard** – Build a detailed analytics dashboard showing trends over time (e.g., most‑flagged clauses, average review time, user activity) and exportable reports for brand managers.
 
----
-**Submission form:** https://forms.gle/gyRiHtQT3AnC2MdV6
-
-*Generated on $(date)*
