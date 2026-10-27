@@ -1,0 +1,66 @@
+BrandLens Project Overview
+=========================
+
+## What is BrandLens?
+BrandLens is a lightweight **brand‑governance platform** built for the Inkloom AI Hackathon (Team Double Trouble).  It provides:
+- A **FastAPI** backend exposing authentication, knowledge‑base, workflow, insights and disclosure endpoints.
+- A **single‑page web UI** (HTML + Vanilla JS) that lets users create draft content, run rule‑based brand reviews, and manage approvals.
+- **Rule‑based checks** (no external AI) that flag claims, terminology, pricing, tone, accessibility and visual‑consistency issues.
+- An audit log and version history for each piece of content.
+- Role‑based access (Creator, Reviewer, Manager, Admin) with role‑specific UI actions.
+
+## Repository Layout
+```
+BrandLens/
+├─ BrandLens.html            # Front‑end UI (no framework)
+├─ backend/                  # FastAPI server
+│   ├─ app/
+│   │   ├─ main.py           # FastAPI entry point, routers inclusion
+│   │   ├─ api/              # Endpoint modules (knowledge_base, workflow, insights, disclosure)
+│   │   ├─ core/             # Config & security helpers
+│   │   └─ db/               # SQLite file (brandlens.db) and DB helpers
+│   └─ requirements.txt      # Python dependencies
+├─ frontend/                 # Vite/React scaffold (unused by the HTML UI)
+│   ├─ index.html
+│   ├─ src/…               
+│   └─ package.json        # Node dependencies (tailwind, vite, etc.)
+├─ migrations/               # DB migration scripts (if any)
+└─ .env.example             # Example environment variables (LLM_PROVIDER, SUPABASE_URL…)
+```
+
+## How to Run the Project
+1. **Install Python dependencies**
+   ```bash
+   cd c:/Programming/Projects/BrandLens
+   python -m venv venv
+   venv\Scripts\activate
+   pip install -r backend/requirements.txt
+   ```
+2. **Start the FastAPI server** (development mode)
+   ```bash
+   python -m uvicorn backend.app.main:app --reload
+   ```
+   The API will be available at `http://127.0.0.1:8000`.
+3. **Open the UI**
+   Open `c:/Programming/Projects/BrandLens/BrandLens.html` in a browser. The UI talks directly to the locally running FastAPI server.
+4. **Optional – Front‑end tooling**
+   The `frontend/` folder is a Vite/React starter that isn’t used by the default UI, but you can run it with:
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+   Then open the Vite dev URL.
+
+## Key Features
+- **Authentication** – Simple demo JWT tokens based on predefined `DEMO_USERS`.
+- **Rule Engine** – Regex‑driven checks for prohibited claims, outdated pricing, tone, accessibility, and visual palette compliance.
+- **Interactive Review** – Users can accept fixes, dismiss findings, add comments, and see audit logs.
+- **Governance Insights** – Dashboard summarising flag counts per clause.
+- **Knowledge Base** – Editable terminology and approved facts (price & colour palette).
+
+## Environment Variables (optional)
+Create a `.env` file based on `.env.example` if you want to connect to Supabase or configure an LLM provider. The app will fallback to SQLite when `SUPABASE_URL` is not set.
+
+---
+*Generated on $(date)*

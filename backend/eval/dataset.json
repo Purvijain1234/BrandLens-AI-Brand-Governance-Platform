@@ -1,0 +1,155 @@
+[
+  {
+    "id": 1,
+    "text": "Get 100% guaranteed results with our #1 skincare serum! Cheap prices, only Rs 999 this week!! BUY NOW and LOVE it!",
+    "has_image": true,
+    "alt_text": "",
+    "fg_color": "#9aa6b2",
+    "bg_color": "#ffffff",
+    "expected_sources": ["C-01", "C-02", "T-01", "F-014", "R-02", "R-03", "A-01", "A-02", "V-01"]
+  },
+  {
+    "id": 2,
+    "text": "Our serum delivers noticeable results with regular use. Formulated for our valued members at Rs 1,199.",
+    "has_image": false,
+    "expected_sources": []
+  },
+  {
+    "id": 3,
+    "text": "This revolutionary cream cures eczema and acne overnight.",
+    "has_image": false,
+    "expected_sources": ["C-03"]
+  },
+  {
+    "id": 4,
+    "text": "Voted #1 night cream in the country by beauty bloggers! ORDER TODAY!!",
+    "has_image": false,
+    "expected_sources": ["C-02", "R-02", "R-03"]
+  },
+  {
+    "id": 5,
+    "text": "We offer cheap skincare solutions for all customers.",
+    "has_image": false,
+    "expected_sources": ["T-01", "T-02"]
+  },
+  {
+    "id": 6,
+    "text": "Experience the best organic botanical blend in South Asia.",
+    "has_image": false,
+    "expected_sources": ["C-02"]
+  },
+  {
+    "id": 7,
+    "text": "Our Glow Serum is priced at Rs 850 during the festival sale.",
+    "has_image": false,
+    "expected_sources": ["F-014"]
+  },
+  {
+    "id": 8,
+    "text": "Amazing glow! You will adore your radiant skin! Don't miss out! Act fast!",
+    "has_image": false,
+    "expected_sources": ["R-02"]
+  },
+  {
+    "id": 9,
+    "text": "LIMITED TIME OFFER ON ALL GLOW HYDRATING ESSENCES.",
+    "has_image": false,
+    "expected_sources": ["R-03"]
+  },
+  {
+    "id": 10,
+    "text": "This deeply hydrating daily emulsion formulated with cold-pressed rosehip seed oil, green tea polyphenols, and quadruple molecular weight sodium hyaluronate revitalizes tired dermal layers exposed to severe urban atmospheric pollution.",
+    "has_image": false,
+    "expected_sources": ["A-03"]
+  },
+  {
+    "id": 11,
+    "text": "Formulated with 10% Niacinamide and 2% Hyaluronic Acid for all skin types.",
+    "has_image": false,
+    "expected_sources": []
+  },
+  {
+    "id": 12,
+    "text": "100% guaranteed results for radiant morning skin.",
+    "has_image": false,
+    "expected_sources": ["C-01"]
+  },
+  {
+    "id": 13,
+    "text": "Our miracle formula cures stubborn sunspots permanently.",
+    "has_image": false,
+    "expected_sources": ["C-03", "T-03"]
+  },
+  {
+    "id": 14,
+    "text": "Treat your skin to affordable luxury with Lumina Skincare.",
+    "has_image": false,
+    "expected_sources": []
+  },
+  {
+    "id": 15,
+    "text": "Only inr 799 for the complete sample set this weekend.",
+    "has_image": false,
+    "expected_sources": ["F-014"]
+  },
+  {
+    "id": 16,
+    "text": "Welcome to our skincare family! We are excited to support your self-care journey.",
+    "has_image": false,
+    "expected_sources": []
+  },
+  {
+    "id": 17,
+    "text": "Rated no. 1 anti-aging essence by cosmetic reviewers.",
+    "has_image": false,
+    "expected_sources": ["C-02"]
+  },
+  {
+    "id": 18,
+    "text": "Cheap deals available now for all existing customers.",
+    "has_image": false,
+    "expected_sources": ["T-01", "T-02"]
+  },
+  {
+    "id": 19,
+    "text": "Proudly Leaping Bunny Certified cruelty-free.",
+    "has_image": false,
+    "expected_sources": []
+  },
+  {
+    "id": 20,
+    "text": "Guaranteed results after just one application of our night oil.",
+    "has_image": false,
+    "expected_sources": ["C-01"]
+  },
+  {
+    "id": 21,
+    "text": "HURRY BEFORE STOCKS RUN OUT COMPLETELY.",
+    "has_image": false,
+    "expected_sources": ["R-03"]
+  },
+  {
+    "id": 22,
+    "text": "Save big! Only ₹ 999 for the full size serum bottle.",
+    "has_image": false,
+    "expected_sources": ["F-014"]
+  },
+  {
+    "id": 23,
+    "text": "Lumina Skincare values clean, science-backed skin wellness.",
+    "has_image": false,
+    "expected_sources": []
+  },
+  {
+    "id": 24,
+    "text": "Clinically proven to hydrate skin cells for up to 24 hours.",
+    "has_image": false,
+    "expected_sources": []
+  },
+  {
+    "id": 25,
+    "text": "Our number one soothing toner cures redness and calms irritation instantly.",
+    "has_image": false,
+    "expected_sources": ["C-02", "C-03"]
+  }
+]

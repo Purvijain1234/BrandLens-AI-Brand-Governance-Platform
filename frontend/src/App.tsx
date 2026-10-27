@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Shield, CheckCircle, FileText, BarChart3, Database, Sparkles, Moon, Sun } from 'lucide-react'
+import { Shield, FileText, BarChart3, Database, Sparkles, Moon, Sun } from 'lucide-react'
+import ReviewTab from './components/ReviewTab'
+import QueueTab from './components/QueueTab'
+import KnowledgeBaseTab from './components/KnowledgeBaseTab'
+import InsightsTab from './components/InsightsTab'
 
 export type Role = 'Creator' | 'Reviewer' | 'Manager' | 'Admin'
 export type Tab = 'Review' | 'Queue' | 'Knowledge Base' | 'Insights'
@@ -9,6 +13,7 @@ export default function App() {
   const [tab, setTab] = useState<Tab>('Review')
   const [darkMode, setDarkMode] = useState<boolean>(true)
   const [backendStatus, setBackendStatus] = useState<string>('Checking...')
+  const [activeDocId, setActiveDocId] = useState<string | null>(null)
 
   useEffect(() => {
     if (darkMode) {
@@ -25,8 +30,13 @@ export default function App() {
       .catch(() => setBackendStatus('Backend starting...'))
   }, [])
 
+  const handleOpenDocFromQueue = (id: string) => {
+    setActiveDocId(id)
+    setTab('Review')
+  }
+
   return (
-    <div className="min-h-screen flex flex-col font-sans transition-colors duration-200">
+    <div className="min-h-screen flex flex-col font-sans transition-colors duration-200 bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100">
       {/* Top Header */}
       <header className="bg-navy-900 border-b border-slate-800 text-white px-6 py-3.5 flex flex-wrap items-center justify-between gap-4 shadow-lg sticky top-0 z-50">
         <div className="flex items-center gap-3">
@@ -78,7 +88,7 @@ export default function App() {
       </header>
 
       {/* Navigation Bar */}
-      <nav className="bg-white dark:bg-navy-950 border-b border-slate-200 dark:border-slate-800/80 px-6 py-2.5 flex items-center justify-between shadow-sm">
+      <nav className="bg-white dark:bg-navy-950 border-b border-slate-200 dark:border-slate-800/80 px-6 py-2.5 flex items-center justify-between shadow-sm sticky top-[65px] z-40">
         <div className="flex items-center gap-1">
           {[
             { id: 'Review', icon: Sparkles, label: 'Review & Edit' },
@@ -113,27 +123,29 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
-        <div className="bg-white dark:bg-[#131b26] border border-slate-200 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
-            <div>
-              <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                {tab}
-              </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Role: <span className="font-medium text-brand-600 dark:text-brand-400">{role}</span> · Phase 1 Scaffold Initialized
-              </p>
-            </div>
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              <CheckCircle className="w-3.5 h-3.5" /> Ready for Phase 2
-            </span>
-          </div>
-
-          <div className="mt-6 py-12 text-center">
-            <p className="text-sm text-slate-600 dark:text-slate-300">
-              Phase 1 project setup, PostgreSQL/SQLite database schema, Lumina Skincare seed data, and role auth are successfully wired up!
-            </p>
-          </div>
-        </div>
+        {tab === 'Review' && (
+          <ReviewTab
+            currentRole={role}
+            activeDocId={activeDocId}
+            onDocChange={(id) => setActiveDocId(id)}
+          />
+        )}
+        {tab === 'Queue' && (
+          <QueueTab
+            currentRole={role}
+            onOpenDoc={handleOpenDocFromQueue}
+          />
+        )}
+        {tab === 'Knowledge Base' && (
+          <KnowledgeBaseTab
+            currentRole={role}
+          />
+        )}
+        {tab === 'Insights' && (
+          <InsightsTab
+            currentRole={role}
+          />
+        )}
       </main>
     </div>
   )
