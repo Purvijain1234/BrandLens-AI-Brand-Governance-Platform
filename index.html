@@ -1,0 +1,91 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>BrandLens - Double Trouble</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#f6f8f9;--card:#fff;--tx:#1b2a49;--mu:#6b7785;--br:#d5dde0;--pri:#0f8b8d;--navy:#1b2a49;--hi:#d64545;--md:#d98a1c;--ok:#2e9e5b;--sel:#eaf4f4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--bg:#12181f;--card:#1b242e;--tx:#e6edf3;--mu:#98a6b3;--br:#2f3b47;--sel:#1f3235;--navy:#0b3b3c}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:var(--navy);color:#fff;padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+header b{font-size:18px}nav{display:flex;gap:4px;flex-wrap:wrap;padding:8px 16px;background:var(--card);border-bottom:1px solid var(--br)}
+nav button{border:0;background:none;color:var(--tx);padding:7px 12px;border-radius:6px;cursor:pointer;font-weight:600}nav button.on{background:var(--pri);color:#fff}
+main{max-width:1050px;margin:auto;padding:16px}.card{background:var(--card);border:1px solid var(--br);border-radius:10px;padding:14px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:1.2fr 1fr;gap:14px}@media(max-width:800px){.grid{grid-template-columns:1fr}}
+textarea,input,select{width:100%;padding:8px;border:1px solid var(--br);border-radius:6px;background:var(--bg);color:var(--tx);font:inherit}textarea{min-height:150px}
+button.b{background:var(--pri);color:#fff;border:0;padding:7px 12px;border-radius:6px;cursor:pointer;font-weight:600;margin:2px}button.b.g{background:var(--card);color:var(--tx);border:1px solid var(--br)}button.b:disabled{opacity:.45;cursor:not-allowed}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:9px;color:#fff;margin-right:4px}.high{background:var(--hi)}.med{background:var(--md)}.low{background:var(--mu)}
+.f{border-left:4px solid var(--md);padding:8px 10px;margin:8px 0;background:var(--sel);border-radius:0 8px 8px 0}.f.high{border-color:var(--hi);color:inherit}.f.done{opacity:.55}
+mark{background:#fde0b0;color:#222;border-radius:3px;padding:0 2px}mark.high{background:#f7c4c4;color:#222}
+.mu{color:var(--mu);font-size:12px}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{flex:1;min-width:120px}table{width:100%;border-collapse:collapse}td,th{padding:6px;border-bottom:1px solid var(--br);text-align:left;font-size:13px}
+.bar{height:10px;background:var(--pri);border-radius:5px}.st{font-weight:700;padding:2px 8px;border-radius:9px;background:var(--sel)}
+</style></head><body>
+<header><b>BrandLens</b><span class="mu" style="color:#cfe">Team Double Trouble | Pre-publication brand governance</span>
+<span>Signed in as <select id="role" style="width:auto"></select></span></header>
+<nav id="nav"></nav><main id="app"></main>
+<script>
+const ROLES=["Creator","Reviewer","Manager","Admin"],TABS=["Review","Queue","Knowledge base","Insights"];
+const SEED_TEXT="Get 100% guaranteed results with our #1 skincare serum! Cheap prices, only Rs 999 this week!! BUY NOW and LOVE it!";
+function seed(){return{role:"Creator",tab:"Review",cur:null,
+ kb:{terms:[{id:"T-01",bad:"cheap",good:"affordable"},{id:"T-02",bad:"customers",good:"members"}],price:"1,199",palette:["#1b2a49","#0f8b8d","#ffffff","#e8a33d"]},
+ docs:[],log:[{t:"flag",s:"C-01"},{t:"flag",s:"C-01"},{t:"dismiss",s:"C-01"},{t:"flag",s:"T-01"},{t:"accept",s:"T-01"},{t:"flag",s:"R-02"},{t:"dismiss",s:"R-02"},{t:"flag",s:"R-02"},{t:"dismiss",s:"R-02"},{t:"flag",s:"F-014"},{t:"accept",s:"F-014"},{t:"flag",s:"A-01"}],ctr:1}}
+let S;try{S=JSON.parse(localStorage.getItem("bl_state")||"null")}catch(e){S=null}if(!S)S=seed();
+const save=()=>{try{localStorage.setItem("bl_state",JSON.stringify(S))}catch(e){}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const now=()=>new Date().toLocaleString();const cur=()=>S.docs.find(d=>d.id===S.cur);
+const CLAUSES={"C-01":"Claims Policy 3.2: result claims need approved evidence","C-02":"Claims Policy 3.4: no superlatives (#1, best) without a cited ranking","C-03":"Claims Policy 3.6: no medical-cure language","R-02":"Voice Guide 2.1: at most one exclamation mark per post","R-03":"Voice Guide 2.3: no shouting in ALL CAPS","A-01":"Accessibility 1.1: images need alt text","A-02":"Accessibility 1.4: text contrast at least 4.5:1","A-03":"Accessibility 2.2: keep sentences under 25 words","V-01":"Visual Guide 1.2: use brand palette colours only","F-014":"Approved fact F-014: current price of Glow Serum"};
+const CLAIMS=[[/(?:100%\s*)?guaranteed\s+results/gi,"C-01","high","noticeable results with regular use"],[/#1|number one|\bno\.\s?1\b/gi,"C-02","high","a trusted"],[/\bbest\b/gi,"C-02","med","a favourite"],[/\bcures?\b/gi,"C-03","high","helps care for"]];
+function lum(h){const n=parseInt(h.replace("#",""),16),c=[n>>16,(n>>8)&255,n&255].map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*c[0]+.7152*c[1]+.0722*c[2]}
+function ratio(a,b){const x=lum(a),y=lum(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
+function analyse(d){const t=d.text,F=[];const add=(o)=>F.push(Object.assign({conf:"high",fix:null},o));
+ CLAIMS.forEach(([re,id,sev,fix])=>{re.lastIndex=0;let m;while((m=re.exec(t))){add({cat:"Unsupported claim",sev,s:m.index,e:m.index+m[0].length,src:id,msg:"\""+m[0]+"\" is a promotional claim with no approved supporting evidence.",fix});}});
+ S.kb.terms.forEach(x=>{const re=new RegExp("\\b"+x.bad+"\\b","gi");let m;while((m=re.exec(t)))add({cat:"Terminology",sev:"med",s:m.index,e:m.index+m[0].length,src:x.id,msg:"\""+m[0]+"\" is not approved wording; preferred term is \""+x.good+"\".",fix:x.good,conf:"high"});});
+const re=/(?:rs\.?|₹|inr)\s*([\d,]+)/gi;let m;while((m=re.exec(t))){if(m[1].replace(/,/g,"")!==S.kb.price.replace(/,/g,""))add({cat:"Outdated / wrong fact",sev:"high",s:m.index,e:m.index+m[0].length,src:"F-014",msg:"Price stated as "+m[0]+" but the approved price is Rs "+S.kb.price+".",fix:"Rs "+S.kb.price});}
+ let n=0;const ex=/!/g;while((m=ex.exec(t))){n++;if(n>1){let e=m.index+1;add({cat:"Tone",sev:"low",s:m.index,e,src:"R-02",msg:"Extra exclamation mark; brand voice allows one per post.",fix:".",conf:"medium"});}}
+ const cp=/\b[A-Z]{4,}\b/g;while((m=cp.exec(t)))add({cat:"Tone",sev:"low",s:m.index,e:m.index+m[0].length,src:"R-03",msg:"\""+m[0]+"\" is in ALL CAPS, which reads as shouting.",fix:m[0][0]+m[0].slice(1).toLowerCase(),conf:"medium"});
+ const sents=t.split(/[.!?]+/).filter(x=>x.trim()),avg=sents.length?t.split(/\s+/).filter(Boolean).length/sents.length:0;
+ if(avg>25)add({cat:"Accessibility",sev:"med",s:0,e:0,src:"A-03",msg:"Average sentence length is "+avg.toFixed(0)+" words; shorten for readability.",conf:"medium"});
+ if(d.hasImage&&!d.alt.trim())add({cat:"Accessibility",sev:"high",s:0,e:0,src:"A-01",msg:"The post includes an image but no alt text was provided."});
+ if(d.hasImage){const r=ratio(d.fg,d.bg);if(r<4.5)add({cat:"Accessibility",sev:"high",s:0,e:0,src:"A-02",msg:"Text/background contrast is "+r.toFixed(2)+":1 (needs 4.5:1)."});
+  [d.fg,d.bg].forEach(c=>{if(!S.kb.palette.includes(c.toLowerCase()))add({cat:"Visual consistency",sev:"med",s:0,e:0,src:"V-01",msg:"Colour "+c+" is not in the approved palette ("+S.kb.palette.join(", ")+").",conf:"medium"});});}
+ F.forEach(f=>{f.text=t.slice(f.s,f.e);f.key=f.src+"|"+f.text});return F.sort((a,b)=>a.s-b.s)}
+function review(d){const F=analyse(d);d.seen=d.seen||[];F.forEach(f=>{f.state=d.dec[f.key]?d.dec[f.key].t:"open";f.reason=d.dec[f.key]?d.dec[f.key].r:"";if(!d.seen.includes(f.key)){d.seen.push(f.key);S.log.push({t:"flag",s:f.src})}});d.F=F;d.audit.push({at:now(),by:"System",ev:"Automated review: "+F.length+" findings (rule-based checks only, no external AI used)"})}
+function newDoc(){const d={id:S.ctr++,title:"Untitled post",type:"Social post",text:SEED_TEXT,hasImage:true,alt:"",fg:"#9aa6b2",bg:"#ffffff",status:"Draft",versions:[],comments:[],audit:[],dec:{},seen:[],F:[]};S.docs.push(d);S.cur=d.id;d.audit.push({at:now(),by:S.role,ev:"Created"});save();render()}
+function setTab(t){S.tab=t;save();render()}
+function highlight(d){let o="",p=0;d.F.filter(f=>f.e>f.s&&f.state==="open").forEach(f=>{if(f.s<p)return;o+=esc(d.text.slice(p,f.s))+"<mark class='"+f.sev+"'>"+esc(d.text.slice(f.s,f.e))+"</mark>";p=f.e});return o+esc(d.text.slice(p))}
+function runReview(){const d=cur();readForm(d);review(d);save();render()}
+function readForm(d){const g=i=>document.getElementById(i);if(!g("txt"))return;d.title=g("ttl").value;d.type=g("typ").value;d.text=g("txt").value;d.hasImage=g("img").checked;d.alt=g("alt").value;d.fg=g("fg").value;d.bg=g("bg").value}
+function decide(i,t){const d=cur(),f=d.F[i];let r="";if(t==="dismissed"){r=prompt("Reason for dismissing (recorded in the audit log):");if(r===null)return;r=r||"no reason given"}
+ if(t==="accepted"){d.text=d.text.slice(0,f.s)+f.fix+d.text.slice(f.e);d.dec[f.key]={t:"accepted",r:""};}else d.dec[f.key]={t:t,r:r};
+ S.log.push({t:t==="accepted"?"accept":"dismiss",s:f.src});d.audit.push({at:now(),by:S.role,ev:(t==="accepted"?"Accepted fix":"Dismissed")+" ["+f.src+"] "+f.text+(r?" - "+r:"")});
+ d.versions.push({n:d.versions.length+1,text:d.text,by:S.role,at:now(),note:t});review(d);save();render()}
+function submitDoc(){const d=cur();readForm(d);review(d);d.status="In review";d.versions.push({n:d.versions.length+1,text:d.text,by:S.role,at:now(),note:"submitted for review"});d.audit.push({at:now(),by:S.role,ev:"Submitted for approval"});save();render()}
+function comment(){const d=cur(),v=document.getElementById("cm").value.trim();if(!v)return;d.comments.push({by:S.role,text:v,at:now()});d.audit.push({at:now(),by:S.role,ev:"Comment added"});save();render()}
+function verdict(v){const d=cur(),n=d.F.filter(f=>f.sev==="high"&&f.state==="open").length;if(v==="Approved"&&n){alert("Approval blocked: "+n+" high-severity finding(s) still open. A human must accept or dismiss each one with a reason.");return}
+ d.status=v;d.audit.push({at:now(),by:S.role,ev:v==="Approved"?"Approved (human sign-off)":"Requested changes"});save();render()}
+function openDoc(id){S.cur=id;S.tab="Review";save();render()}
+function reviewTab(){const d=cur();if(!d)return"<div class='card'><p>No content yet.</p><button class='b' onclick='newDoc()'>+ New content</button></div>";
+ const canEdit=S.role==="Creator"&&["Draft","Changes requested"].includes(d.status),ro=canEdit?"":"disabled";
+ const open=d.F.filter(f=>f.state==="open").length,hi=d.F.filter(f=>f.sev==="high"&&f.state==="open").length;
+ const fl=d.F.map((f,i)=>"<div class='f "+(f.sev==="high"?"high ":"")+(f.state!=="open"?"done":"")+"'><span class='tag "+f.sev+"'>"+f.sev.toUpperCase()+"</span><b>"+f.cat+"</b> <span class='mu'>confidence: "+f.conf+"</span><br>"+esc(f.msg)+"<br><span class='mu'>Source: <b>"+f.src+"</b> - "+esc(CLAUSES[f.src]||("Terminology list: "+f.src))+"</span>"+
+  (f.fix!==null&&f.state==="open"?"<br><i>Suggested fix:</i> <b>"+esc(f.fix)+"</b>":"")+(f.state==="open"?"<div>"+(f.fix!==null?"<button class='b' "+(S.role==="Creator"?"":"disabled")+" onclick='decide("+i+",\"accepted\")'>Accept fix</button>":"")+"<button class='b g' "+(S.role==="Creator"?"":"disabled")+" onclick='decide("+i+",\"dismissed\")'>Dismiss</button></div>":"<br><b>"+f.state.toUpperCase()+"</b> "+esc(f.reason))+"</div>").join("");
+ return"<div class='grid'><div><div class='card'><div class='row'><input id='ttl' value='"+esc(d.title)+"' "+ro+"><select id='typ' "+ro+">"+["Social post","Press release","Ad copy","Blog"].map(x=>"<option"+(x===d.type?" selected":"")+">"+x+"</option>").join("")+"</select><span class='st'>"+d.status+"</span></div>"+
+ "<p class='mu'>Content (text pasted from a post or document)</p><textarea id='txt' "+ro+">"+esc(d.text)+"</textarea>"+
+ "<label class='row' style='margin-top:8px'><span style='flex:0'><input type='checkbox' id='img' "+(d.hasImage?"checked ":"")+ro+" style='width:auto'></span><span style='flex:4'>Post includes an image</span></label>"+
+ "<div class='row'><input id='alt' placeholder='Alt text' value='"+esc(d.alt)+"' "+ro+"><label class='mu'>Text colour <input id='fg' type='color' value='"+d.fg+"' "+ro+"></label><label class='mu'>Background <input id='bg' type='color' value='"+d.bg+"' "+ro+"></label></div>"+
+ "<div style='margin-top:8px'><button class='b' onclick='runReview()' "+ro+">Run brand review</button>"+(S.role==="Creator"&&["Draft","Changes requested"].includes(d.status)?"<button class='b g' onclick='submitDoc()'>Submit for approval</button>":"")+"</div></div>"+
+ "<div class='card'><b>Highlighted content</b><p>"+(d.F.length?highlight(d):"<span class='mu'>Run a review to see highlights.</span>")+"</p></div></div>"+
+ "<div><div class='card'><b>Findings</b> <span class='mu'>("+open+" open, "+hi+" high)</span>"+(fl||"<p class='mu'>No findings yet.</p>")+"<p class='mu'>AI disclosure: this review used rule-based checks and the approved knowledge base only. No content was sent to an external AI service.</p></div>"+
+ "<div class='card'><b>Review and approval</b><div class='row' style='margin:6px 0'><input id='cm' placeholder='Add a comment'><button class='b' style='flex:0' onclick='comment()'>Post</button></div>"+d.comments.map(c=>"<div class='mu'><b>"+c.by+"</b> ("+c.at+"): "+esc(c.text)+"</div>").join("")+
+ "<div>"+(d.status==="In review"&&S.role==="Reviewer"?"<button class='b g' onclick='verdict(\"Changes requested\")'>Request changes</button>":"")+(d.status==="In review"&&S.role==="Manager"?"<button class='b' onclick='verdict(\"Approved\")'>Approve</button><button class='b g' onclick='verdict(\"Changes requested\")'>Request changes</button>":"")+(d.status==="In review"&&!["Reviewer","Manager"].includes(S.role)?"<span class='mu'>Waiting for a Reviewer or Manager (switch role at the top).</span>":"")+"</div></div>"+
+ "<div class='card'><b>Version history</b>"+(d.versions.map(v=>"<div class='mu'>v"+v.n+" - "+v.by+" - "+v.note+" - "+v.at+"</div>").join("")||"<p class='mu'>No versions yet.</p>")+"<b>Audit log</b>"+d.audit.slice(-8).map(a=>"<div class='mu'>"+a.at+" - "+a.by+": "+esc(a.ev)+"</div>").join("")+"</div></div></div>"}
+function queueTab(){return"<div class='card'><button class='b' onclick='newDoc()'>+ New content</button><table><tr><th>Title</th><th>Type</th><th>Status</th><th>Open findings</th><th></th></tr>"+S.docs.map(d=>"<tr><td>"+esc(d.title)+"</td><td>"+d.type+"</td><td><span class='st'>"+d.status+"</span></td><td>"+d.F.filter(f=>f.state==="open").length+"</td><td><button class='b g' onclick='openDoc("+d.id+")'>Open</button></td></tr>").join("")+"</table>"+(S.docs.length?"":"<p class='mu'>Nothing here yet.</p>")+"</div>"}
+function kbTab(){const a=S.role==="Admin";return"<div class='grid'><div class='card'><b>Approved terminology</b><table><tr><th>ID</th><th>Avoid</th><th>Use</th></tr>"+S.kb.terms.map(t=>"<tr><td>"+t.id+"</td><td>"+esc(t.bad)+"</td><td>"+esc(t.good)+"</td></tr>").join("")+"</table>"+(a?"<div class='row' style='margin-top:8px'><input id='tb' placeholder='Avoid'><input id='tg' placeholder='Use instead'><button class='b' onclick='addTerm()'>Add</button></div>":"<p class='mu'>Switch to Admin to edit.</p>")+"</div>"+
+ "<div class='card'><b>Approved facts</b><p>F-014 Glow Serum price: Rs <input id='pr' value='"+S.kb.price+"' style='width:100px;display:inline' "+(a?"":"disabled")+"> "+(a?"<button class='b' onclick='setPrice()'>Save</button>":"")+"</p><b>Brand palette</b><p>"+S.kb.palette.map(c=>"<span style='display:inline-block;width:22px;height:22px;background:"+c+";border:1px solid var(--br);margin-right:4px;vertical-align:middle'></span>"+c).join(" ")+"</p><b>Guideline clauses</b>"+Object.entries(CLAUSES).map(([k,v])=>"<div class='mu'><b>"+k+"</b> "+v+"</div>").join("")+"</div></div>"}
+function addTerm(){const b=tb.value.trim(),g=tg.value.trim();if(!b||!g)return;S.kb.terms.push({id:"T-"+String(S.kb.terms.length+1).padStart(2,"0"),bad:b,good:g});save();render()}
+function setPrice(){S.kb.price=pr.value.trim()||S.kb.price;save();render()}
+function insTab(){const c={};S.log.forEach(e=>{c[e.s]=c[e.s]||{f:0,a:0,d:0};c[e.s][e.t==="flag"?"f":e.t==="accept"?"a":"d"]++});const rows=Object.entries(c).sort((a,b)=>b[1].f-a[1].f),mx=Math.max(1,...rows.map(r=>r[1].f));
+ return"<div class='card'><b>Governance insights</b><p class='mu'>Seeded with sample history so the dashboard is not empty; every real review adds to it.</p><table><tr><th>Clause</th><th>Times flagged</th><th></th><th>Accepted</th><th>Dismissed</th><th>Signal</th></tr>"+rows.map(([k,v])=>{const un=v.f>=2&&v.d/v.f>=.5;return"<tr><td><b>"+k+"</b><div class='mu'>"+esc((CLAUSES[k]||"").slice(0,48))+"</div></td><td>"+v.f+"</td><td style='width:25%'><div class='bar' style='width:"+(v.f/mx*100)+"%'></div></td><td>"+v.a+"</td><td>"+v.d+"</td><td>"+(un?"<span class='tag med'>Possibly unclear guideline</span>":"<span class='mu'>OK</span>")+"</td></tr>"}).join("")+"</table><p class='mu'>A clause that creators dismiss in at least half of its flags is highlighted as possibly unclear, so the Brand Admin can rewrite it.</p></div>"}
+function render(){document.getElementById("role").innerHTML=ROLES.map(r=>"<option"+(r===S.role?" selected":"")+">"+r+"</option>").join("");
+ document.getElementById("nav").innerHTML=TABS.map(t=>"<button class='"+(t===S.tab?"on":"")+"' onclick='setTab(\""+t+"\")'>"+t+"</button>").join("");
+ document.getElementById("app").innerHTML=S.tab==="Review"?reviewTab():S.tab==="Queue"?queueTab():S.tab==="Knowledge base"?kbTab():insTab()}
+document.getElementById("role").onchange=e=>{const d=cur();if(d)try{readForm(d)}catch(x){}S.role=e.target.value;save();render()};
+if(!S.docs.length){newDoc()}else render();
+</script></body></html>
